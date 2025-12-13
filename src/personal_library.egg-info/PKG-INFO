@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: personal-library
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.13
+Requires-Dist: mypy>=1.19.0
+Requires-Dist: pyside6>=6.10.1
+Requires-Dist: ruff>=0.14.9
