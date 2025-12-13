@@ -1,0 +1,15 @@
+pyproject.toml
+src/library_app/__init__.py
+src/library_app/main.py
+src/library_app/controller/__init__.py
+src/library_app/controller/main_controller.py
+src/library_app/model/__init__.py
+src/library_app/model/entities.py
+src/library_app/model/repository.py
+src/library_app/view/__init__.py
+src/library_app/view/main_window.py
+src/personal_library.egg-info/PKG-INFO
+src/personal_library.egg-info/SOURCES.txt
+src/personal_library.egg-info/dependency_links.txt
+src/personal_library.egg-info/requires.txt
+src/personal_library.egg-info/top_level.txt
