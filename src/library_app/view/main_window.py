@@ -7,15 +7,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QToolBar,
     QStatusBar,
+    QTableView,
 )
+
+from library_app.view.item_table_model import ItemTableModel
 
 
 class MainWindow(QMainWindow):
-    """
-    View: contains Qt widgets only.
-    No DB calls, no HTTP calls.
-    """
-
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Personal Library (MVC Learning App)")
@@ -30,14 +28,22 @@ class MainWindow(QMainWindow):
         root = QWidget(self)
         layout = QVBoxLayout(root)
 
-        self._headline = QLabel("Personal Library — Step #1 (UI Skeleton)")
+        self._headline = QLabel("Personal Library — Step #2 (SQLite + QTableView)")
         self._headline.setStyleSheet("font-size: 18px; font-weight: 600;")
         layout.addWidget(self._headline)
 
-        self._hint = QLabel("Next: SQLite + Table View + Add/Search flow.")
-        layout.addWidget(self._hint)
+        self.table = QTableView(self)
+        self.table.setSortingEnabled(True)
+        layout.addWidget(self.table)
+
+        self._model = ItemTableModel([])
+        self.table.setModel(self._model)
 
         self.setCentralWidget(root)
 
     def set_status(self, text: str) -> None:
         self._status.showMessage(text)
+
+    def set_items(self, items) -> None:
+        self._model.set_items(items)
+        self.table.resizeColumnsToContents()
