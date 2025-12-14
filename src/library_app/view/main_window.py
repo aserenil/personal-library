@@ -10,10 +10,12 @@ from PySide6.QtWidgets import (
     QLabel,
     QToolBar,
     QStatusBar,
+    QSplitter,
     QTableView,
 )
 
 from library_app.view.item_table_model import ItemTableModel
+from library_app.view.item_detail_widget import ItemDetailWidget
 
 
 class MainWindow(QMainWindow):
@@ -40,9 +42,20 @@ class MainWindow(QMainWindow):
         self._headline.setStyleSheet("font-size: 18px; font-weight: 600;")
         layout.addWidget(self._headline)
 
+        splitter = QSplitter(self)
+        splitter.setChildrenCollapsible(False)
+
         self.table = QTableView(self)
         self.table.setSortingEnabled(True)
-        layout.addWidget(self.table)
+
+        self.detail = ItemDetailWidget(self)
+
+        splitter.addWidget(self.table)
+        splitter.addWidget(self.detail)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 2)
+
+        layout.addWidget(splitter)
 
         self._model = ItemTableModel([])
         self.table.setModel(self._model)
