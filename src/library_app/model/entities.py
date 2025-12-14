@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class Item:
     id: int
     title: str
-    media_type: str  # later: Enum (book/comic/movie/etc)
-    status: str      # later: Enum (backlog/in_progress/done)
+    media_type: str  # book/comic/movie/etc (later: Enum)
+    status: str  # backlog/in_progress/done (later: Enum)
     rating: int | None = None
     notes: str = ""

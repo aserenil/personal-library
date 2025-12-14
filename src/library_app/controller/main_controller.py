@@ -7,18 +7,19 @@ from library_app.view.main_window import MainWindow
 
 
 class MainController(QObject):
-    """
-    Controller: wires the UI to the model layer.
-    For Step #1, it's just bootstrapping + a stub repository.
-    """
-
     def __init__(self) -> None:
         super().__init__()
         self._repo = ItemRepository()
         self._window = MainWindow()
 
-        # Example: controller sets initial UI state
-        self._window.set_status("Ready. (Step #1)")
+        self._repo.ensure_sample_data()
+        self.refresh()
+
+        self._window.set_status("Loaded items from SQLite (Step #2).")
+
+    def refresh(self) -> None:
+        items = self._repo.list_items()
+        self._window.set_items(items)
 
     def show(self) -> None:
         self._window.show()
