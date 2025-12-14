@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QAction
+
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -14,13 +17,18 @@ from library_app.view.item_table_model import ItemTableModel
 
 
 class MainWindow(QMainWindow):
+    add_item_requested = Signal()
+
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Personal Library (MVC Learning App)")
-        self.resize(1000, 650)
-
+        ...
         toolbar = QToolBar("Main")
         self.addToolBar(toolbar)
+
+        add_action = QAction("Add", self)
+        add_action.setToolTip("Add a new item")
+        add_action.triggered.connect(self.add_item_requested.emit)
+        toolbar.addAction(add_action)
 
         self._status = QStatusBar()
         self.setStatusBar(self._status)
