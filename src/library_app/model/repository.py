@@ -48,6 +48,42 @@ class ItemRepository:
         self._conn.commit()
         return int(cur.lastrowid)
 
+    def get_item(self, item_id: int) -> Item | None:
+        row = self._conn.execute(
+            "SELECT id, title, media_type, status, rating, notes FROM items WHERE id = ?",
+            (item_id,),
+        ).fetchone()
+        if not row:
+            return None
+        return Item(
+            id=row["id"],
+            title=row["title"],
+            media_type=row["media_type"],
+            status=row["status"],
+            rating=row["rating"],
+            notes=row["notes"],
+        )
+
+    def update_item(
+        self,
+        item_id: int,
+        *,
+        title: str,
+        media_type: str,
+        status: str,
+        rating: int | None,
+        notes: str,
+    ) -> None:
+        self._conn.execute(
+            """
+            UPDATE items
+            SET title = ?, media_type = ?, status = ?, rating = ?, notes = ?
+            WHERE id = ?
+            """,
+            (title, media_type, status, rating, notes, item_id),
+        )
+        self._conn.commit()
+
     def ensure_sample_data(self) -> None:
         count = self._conn.execute("SELECT COUNT(*) AS c FROM items").fetchone()["c"]
         if count:
