@@ -1,3 +1,5 @@
+httpx>=0.28.1
 mypy>=1.19.0
 pyside6>=6.10.1
+pyside6-stubs>=6.7.3.0
 ruff>=0.14.9

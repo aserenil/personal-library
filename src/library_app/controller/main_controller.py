@@ -1,10 +1,15 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QObject
+from typing import cast
 
+from PySide6.QtCore import QObject, QRunnable, QThreadPool
+
+from library_app.model.openlibrary import OLResult, search_openlibrary
 from library_app.model.repository import ItemRepository
-from library_app.view.main_window import MainWindow
+from library_app.util.worker import Worker
 from library_app.view.add_item_dialog import AddItemDialog
+from library_app.view.main_window import MainWindow
+from library_app.view.search_online_dialog import SearchOnlineDialog
 
 
 class MainController(QObject):
@@ -25,6 +30,9 @@ class MainController(QObject):
 
         # detail save -> repo update
         self._window.detail.save_requested.connect(self.on_save_item)
+
+        self._pool = QThreadPool.globalInstance()
+        self._window.search_online_requested.connect(self.on_search_online)
 
         self._window.set_status("Loaded items from SQLite.")
 
@@ -92,7 +100,7 @@ class MainController(QObject):
         dlg = AddItemDialog(self._window)
         from PySide6.QtWidgets import QDialog
 
-        if dlg.exec() != QDialog.Accepted:
+        if dlg.exec() != QDialog.DialogCode.Accepted:
             self._window.set_status("Add cancelled.")
             return
 
@@ -111,3 +119,43 @@ class MainController(QObject):
         )
         self.refresh(reselect_id=new_id)
         self._window.set_status(f"Added: {title}")
+
+    def on_search_online(self) -> None:
+        dlg = SearchOnlineDialog(self._window)
+        dlg.search_requested.connect(lambda q: self._do_search(dlg, q))
+        dlg.import_requested.connect(lambda r: self._import_result(dlg, r))
+        dlg.exec()
+
+    def _do_search(self, dlg: SearchOnlineDialog, query: str) -> None:
+        dlg.set_busy(True)
+        self._window.set_status("Searching Open Library...")
+
+        w = Worker(search_openlibrary, query, limit=25)
+        w.signals.result.connect(lambda results: dlg.set_results(results))
+        w.signals.error.connect(
+            lambda tb: self._window.set_status("Search failed (see console).")
+            or print(tb)
+        )
+        w.signals.finished.connect(lambda: dlg.set_busy(False))
+        w.signals.result.connect(lambda _: self._window.set_status("Search complete."))
+        self._pool.start(cast(QRunnable, w))
+
+    def _import_result(self, dlg: SearchOnlineDialog, r: OLResult) -> None:
+        if not r.title:
+            self._window.set_status("Cannot import empty title.")
+            return
+
+        new_id = self._repo.add_item(
+            title=r.title,
+            media_type="book",
+            status="backlog",
+            rating=None,
+            notes="Imported from Open Library",
+            author=r.author,
+            first_publish_year=r.first_publish_year,
+            openlibrary_key=r.key or None,
+            cover_id=r.cover_i,
+        )
+        self.refresh(reselect_id=new_id)
+        self._window.set_status(f"Imported: {r.title}")
+        dlg.accept()

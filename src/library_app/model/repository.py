@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from library_app.model.db import connect, init_db
 from library_app.model.entities import Item
 
@@ -37,24 +36,55 @@ class ItemRepository:
         status: str = "backlog",
         rating: int | None = None,
         notes: str = "",
+        *,
+        author: str = "",
+        first_publish_year: int | None = None,
+        openlibrary_key: str | None = None,
+        cover_id: int | None = None,
     ) -> int:
         cur = self._conn.execute(
             """
-            INSERT INTO items (title, media_type, status, rating, notes)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO items (title, media_type, status, rating, notes,
+                               author, first_publish_year, openlibrary_key, cover_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (title, media_type, status, rating, notes),
+            (
+                title,
+                media_type,
+                status,
+                rating,
+                notes,
+                author,
+                first_publish_year,
+                openlibrary_key,
+                cover_id,
+            ),
         )
         self._conn.commit()
         return int(cur.lastrowid)
 
     def get_item(self, item_id: int) -> Item | None:
         row = self._conn.execute(
-            "SELECT id, title, media_type, status, rating, notes FROM items WHERE id = ?",
+            """
+            SELECT id,
+                   title,
+                   media_type,
+                   status,
+                   rating,
+                   notes,
+                   author,
+                   first_publish_year,
+                   openlibrary_key,
+                   cover_id
+            FROM items
+            WHERE id = ?
+            """,
             (item_id,),
         ).fetchone()
-        if not row:
+
+        if row is None:
             return None
+
         return Item(
             id=row["id"],
             title=row["title"],
@@ -62,6 +92,10 @@ class ItemRepository:
             status=row["status"],
             rating=row["rating"],
             notes=row["notes"],
+            author=row["author"],
+            first_publish_year=row["first_publish_year"],
+            openlibrary_key=row["openlibrary_key"],
+            cover_id=row["cover_id"],
         )
 
     def update_item(

@@ -11,3 +11,7 @@ class Item:
     status: str  # backlog/in_progress/done (later: Enum)
     rating: int | None = None
     notes: str = ""
+    author: str = ""
+    first_publish_year: int | None = None
+    openlibrary_key: str | None = None
+    cover_id: int | None = None

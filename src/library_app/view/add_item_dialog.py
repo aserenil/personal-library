@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -10,6 +11,8 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
 )
+
+from library_app.view.types import ItemFormData
 
 
 class AddItemDialog(QDialog):
@@ -57,9 +60,10 @@ class AddItemDialog(QDialog):
 
         self.title_edit.setFocus()
 
-    def get_data(self) -> dict[str, object]:
+    def _collect_form_data(self) -> ItemFormData:
         rating_val = self.rating_spin.value()
         rating = None if rating_val == 0 else rating_val
+
         return {
             "title": self.title_edit.text().strip(),
             "media_type": self.type_combo.currentText(),
@@ -67,3 +71,6 @@ class AddItemDialog(QDialog):
             "rating": rating,
             "notes": self.notes_edit.toPlainText().strip(),
         }
+
+    def get_data(self) -> ItemFormData:
+        return self._collect_form_data()
