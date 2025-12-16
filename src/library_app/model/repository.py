@@ -1,7 +1,23 @@
 from __future__ import annotations
 
+from typing import Any
+
 from library_app.model.db import connect, init_db
 from library_app.model.entities import Item
+from library_app.model.enums import ItemStatus, MediaType
+
+_ITEM_COLUMNS = """
+    id,
+    title,
+    media_type,
+    status,
+    rating,
+    notes,
+    author,
+    first_publish_year,
+    openlibrary_key,
+    cover_id
+"""
 
 
 class ItemRepository:
@@ -13,27 +29,37 @@ class ItemRepository:
         self._conn = connect()
         init_db(self._conn)
 
+    @staticmethod
+    def _item_from_row(row: Any) -> Item:
+        return Item(
+            id=row["id"],
+            title=row["title"],
+            media_type=row["media_type"],
+            status=row["status"],
+            rating=row["rating"],
+            notes=row["notes"],
+            author=row["author"],
+            first_publish_year=row["first_publish_year"],
+            openlibrary_key=row["openlibrary_key"],
+            cover_id=row["cover_id"],
+        )
+
     def list_items(self) -> list[Item]:
         rows = self._conn.execute(
-            "SELECT id, title, media_type, status, rating, notes FROM items ORDER BY id DESC"
+            f"""
+            SELECT {_ITEM_COLUMNS}
+            FROM items
+            ORDER BY id DESC
+            """
         ).fetchall()
-        return [
-            Item(
-                id=row["id"],
-                title=row["title"],
-                media_type=row["media_type"],
-                status=row["status"],
-                rating=row["rating"],
-                notes=row["notes"],
-            )
-            for row in rows
-        ]
+
+        return [self._item_from_row(row) for row in rows]
 
     def add_item(
         self,
         title: str,
-        media_type: str = "book",
-        status: str = "backlog",
+        media_type: MediaType,
+        status: ItemStatus,
         rating: int | None = None,
         notes: str = "",
         *,
@@ -50,8 +76,8 @@ class ItemRepository:
             """,
             (
                 title,
-                media_type,
-                status,
+                media_type.value,
+                status.value,
                 rating,
                 notes,
                 author,
@@ -65,17 +91,8 @@ class ItemRepository:
 
     def get_item(self, item_id: int) -> Item | None:
         row = self._conn.execute(
-            """
-            SELECT id,
-                   title,
-                   media_type,
-                   status,
-                   rating,
-                   notes,
-                   author,
-                   first_publish_year,
-                   openlibrary_key,
-                   cover_id
+            f"""
+            SELECT {_ITEM_COLUMNS} 
             FROM items
             WHERE id = ?
             """,
@@ -85,26 +102,15 @@ class ItemRepository:
         if row is None:
             return None
 
-        return Item(
-            id=row["id"],
-            title=row["title"],
-            media_type=row["media_type"],
-            status=row["status"],
-            rating=row["rating"],
-            notes=row["notes"],
-            author=row["author"],
-            first_publish_year=row["first_publish_year"],
-            openlibrary_key=row["openlibrary_key"],
-            cover_id=row["cover_id"],
-        )
+        return self._item_from_row(row)
 
     def update_item(
         self,
         item_id: int,
         *,
         title: str,
-        media_type: str,
-        status: str,
+        media_type: MediaType,
+        status: ItemStatus,
         rating: int | None,
         notes: str,
     ) -> None:
@@ -114,14 +120,27 @@ class ItemRepository:
             SET title = ?, media_type = ?, status = ?, rating = ?, notes = ?
             WHERE id = ?
             """,
-            (title, media_type, status, rating, notes, item_id),
+            (title, media_type.value, status.value, rating, notes, item_id),
         )
         self._conn.commit()
 
     def ensure_sample_data(self) -> None:
-        count = self._conn.execute("SELECT COUNT(*) AS c FROM items").fetchone()["c"]
+        row = self._conn.execute("SELECT COUNT(*) AS c FROM items").fetchone()
+        count = int(row["c"]) if row else 0
         if count:
             return
-        self.add_item("The Hobbit", media_type="book", status="done", rating=5)
-        self.add_item("Amazing Spider-Man #1", media_type="comic", status="backlog")
-        self.add_item("The Social Network", media_type="movie", status="done", rating=4)
+
+        self.add_item(
+            "The Hobbit", media_type=MediaType.BOOK, status=ItemStatus.DONE, rating=5
+        )
+        self.add_item(
+            "Amazing Spider-Man #1",
+            media_type=MediaType.COMIC,
+            status=ItemStatus.BACKLOG,
+        )
+        self.add_item(
+            "The Social Network",
+            media_type=MediaType.MOVIE,
+            status=ItemStatus.DONE,
+            rating=4,
+        )
