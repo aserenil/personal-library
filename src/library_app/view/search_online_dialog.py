@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
+    QWidget,
 )
 
 from library_app.model.openlibrary import OLResult
@@ -19,7 +20,7 @@ class SearchOnlineDialog(QDialog):
     search_requested = Signal(str)
     import_requested = Signal(object)  # OLResult
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Search Online (Open Library)")
         self.resize(820, 420)

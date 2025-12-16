@@ -9,6 +9,7 @@ from library_app.model.openlibrary import OLResult, search_openlibrary
 from library_app.model.repository import ItemRepository
 from library_app.util.worker import Worker
 from library_app.view.add_item_dialog import AddItemDialog
+from library_app.view.item_table_model import ItemTableModel
 from library_app.view.main_window import MainWindow
 from library_app.view.search_online_dialog import SearchOnlineDialog
 
@@ -18,6 +19,7 @@ class MainController(QObject):
         super().__init__()
         self._repo = ItemRepository()
         self._window = MainWindow()
+        self.table_model: ItemTableModel = self._window.table_model
 
         self._repo.ensure_sample_data()
         self.refresh()
@@ -48,7 +50,7 @@ class MainController(QObject):
             # reselect row by id after refresh (keeps UI stable)
             for row, item in enumerate(items):
                 if item.id == reselect_id:
-                    idx = self._window.table.model().index(row, 0)
+                    idx = self.table_model.index(row, 0)
                     self._window.table.selectRow(row)
                     self._window.table.scrollTo(idx)
                     break
@@ -57,10 +59,10 @@ class MainController(QObject):
         index = self._window.table.currentIndex()
         if not index.isValid():
             return None
-        item = self._window.table.model().item_at(index.row())  # from ItemTableModel
+        item = self.table_model.item_at(index.row())  # from ItemTableModel
         return None if item is None else item.id
 
-    def on_selection_changed(self, *_args) -> None:
+    def on_selection_changed(self, *_args: object) -> None:
         item_id = self.selected_item_id()
         if item_id is None:
             self._window.detail.clear()
@@ -136,13 +138,14 @@ class MainController(QObject):
 
         w = Worker(search_openlibrary, query, limit=25)
         w.signals.result.connect(lambda results: dlg.set_results(results))
-        w.signals.error.connect(
-            lambda tb: self._window.set_status("Search failed (see console).")
-            or print(tb)
-        )
+        w.signals.error.connect(self._on_search_error)
         w.signals.finished.connect(lambda: dlg.set_busy(False))
         w.signals.result.connect(lambda _: self._window.set_status("Search complete."))
         self._pool.start(cast(QRunnable, w))
+
+    def _on_search_error(self, tb: str) -> None:
+        self._window.set_status("Search failed (see console).")
+        print(tb)
 
     def _import_result(self, dlg: SearchOnlineDialog, r: OLResult) -> None:
         if not r.title:

@@ -1,0 +1,18 @@
+{
+  "include": ["src"],
+  "typeCheckingMode": "basic",
+
+  "reportGeneralTypeIssues": "error",
+  "reportArgumentType": "error",
+  "reportCallIssue": "error",
+
+  "reportUnknownMemberType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownLambdaType": "none",
+  "reportUnknownParameterType": "none",
+  "reportUnknownVariableType": "none",
+  "reportAttributeAccessIssue": "warning",
+
+  "reportMissingTypeStubs": false
+}
+
