@@ -7,6 +7,7 @@ src/library_app/controller/main_controller.py
 src/library_app/model/__init__.py
 src/library_app/model/db.py
 src/library_app/model/entities.py
+src/library_app/model/enums.py
 src/library_app/model/openlibrary.py
 src/library_app/model/repository.py
 src/library_app/util/__init__.py
@@ -17,6 +18,7 @@ src/library_app/view/item_detail_widget.py
 src/library_app/view/item_table_model.py
 src/library_app/view/main_window.py
 src/library_app/view/search_online_dialog.py
+src/library_app/view/types.py
 src/personal_library.egg-info/PKG-INFO
 src/personal_library.egg-info/SOURCES.txt
 src/personal_library.egg-info/dependency_links.txt

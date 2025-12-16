@@ -4,6 +4,7 @@ from typing import cast
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool
 
+from library_app.model.enums import ItemStatus, MediaType
 from library_app.model.openlibrary import OLResult, search_openlibrary
 from library_app.model.repository import ItemRepository
 from library_app.util.worker import Worker
@@ -85,13 +86,16 @@ class MainController(QObject):
             self._window.set_status("Title is required.")
             return
 
+        media_type = data["media_type"]
+        status = data["status"]
+
         self._repo.update_item(
-            item_id,
+            item_id=item_id,
             title=title,
-            media_type=str(data["media_type"]),
-            status=str(data["status"]),
-            rating=data["rating"],  # int | None
-            notes=str(data["notes"]),
+            media_type=media_type,
+            status=status,
+            rating=data["rating"],
+            notes=data["notes"],
         )
         self.refresh(reselect_id=item_id)
         self._window.set_status(f"Saved: {title}")
@@ -112,8 +116,8 @@ class MainController(QObject):
 
         new_id = self._repo.add_item(
             title=title,
-            media_type=str(data["media_type"]),
-            status=str(data["status"]),
+            media_type=data["media_type"],
+            status=data["status"],
             rating=data["rating"],
             notes=str(data["notes"]),
         )
@@ -147,8 +151,8 @@ class MainController(QObject):
 
         new_id = self._repo.add_item(
             title=r.title,
-            media_type="book",
-            status="backlog",
+            media_type=MediaType.BOOK,
+            status=ItemStatus.BACKLOG,
             rating=None,
             notes="Imported from Open Library",
             author=r.author,
