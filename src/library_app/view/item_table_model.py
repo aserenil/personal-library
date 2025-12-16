@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from typing import Any
+
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, QPersistentModelIndex, Qt
 
 from library_app.model.entities import Item
 
@@ -17,27 +19,40 @@ class ItemTableModel(QAbstractTableModel):
         self._items = items
         self.endResetModel()
 
-    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:  # noqa: N802
+    def rowCount(
+        self, parent: QModelIndex | QPersistentModelIndex = QModelIndex()
+    ) -> int:  # noqa: N802
         return 0 if parent.isValid() else len(self._items)
 
-    def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:  # noqa: N802
+    def columnCount(
+        self, parent: QModelIndex | QPersistentModelIndex = QModelIndex()
+    ) -> int:  # noqa: N802
         return 0 if parent.isValid() else len(self.HEADERS)
 
     def headerData(
-        self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole
-    ):  # noqa: N802
-        if role != Qt.DisplayRole:
+        self,
+        section: int,
+        orientation: Qt.Orientation,
+        role: int = Qt.ItemDataRole.DisplayRole,
+    ) -> Any:  # noqa: N802
+        if role != Qt.ItemDataRole.DisplayRole:
             return None
-        if orientation == Qt.Horizontal and 0 <= section < len(self.HEADERS):
+        if orientation == Qt.Orientation.Horizontal and 0 <= section < len(
+            self.HEADERS
+        ):
             return self.HEADERS[section]
         return None
 
-    def data(self, index: QModelIndex, role: int = Qt.DisplayRole):  # noqa: N802
+    def data(
+        self,
+        index: QModelIndex | QPersistentModelIndex,
+        role: int = int(Qt.ItemDataRole.DisplayRole),
+    ) -> Any:  # noqa: N802
         if not index.isValid():
             return None
         item = self._items[index.row()]
 
-        if role in (Qt.DisplayRole, Qt.EditRole):
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             col = index.column()
             if col == 0:
                 return item.title

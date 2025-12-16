@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from library_app.model.entities import Item
 from library_app.view.item_detail_widget import ItemDetailWidget
 from library_app.view.item_table_model import ItemTableModel
 
@@ -61,14 +62,14 @@ class MainWindow(QMainWindow):
 
         layout.addWidget(splitter)
 
-        self._model = ItemTableModel([])
-        self.table.setModel(self._model)
+        self.table_model = ItemTableModel([])
+        self.table.setModel(self.table_model)
 
         self.setCentralWidget(root)
 
     def set_status(self, text: str) -> None:
         self._status.showMessage(text)
 
-    def set_items(self, items) -> None:
-        self._model.set_items(items)
+    def set_items(self, items: list[Item]) -> None:
+        self.table_model.set_items(items)
         self.table.resizeColumnsToContents()

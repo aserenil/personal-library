@@ -87,7 +87,10 @@ class ItemRepository:
             ),
         )
         self._conn.commit()
-        return int(cur.lastrowid)
+        lastrowid = cur.lastrowid
+        if lastrowid is None:
+            raise RuntimeError("SQLite insert succeeded but cursor.lastrowid is None")
+        return int(lastrowid)
 
     def get_item(self, item_id: int) -> Item | None:
         row = self._conn.execute(

@@ -18,6 +18,13 @@ package = true
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
+[dependency-groups]
+dev = [
+    "isort>=7.0.0",
+    "mypy>=1.19.1",
+    "pyright>=1.1.407",
+]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 

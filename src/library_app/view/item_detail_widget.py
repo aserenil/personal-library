@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QComboBox,
@@ -88,7 +90,7 @@ class ItemDetailWidget(QGroupBox):
         self.notes_edit.setPlainText("")
         self.set_enabled(False)
 
-    def _set_combo_by_data(self, combo: QComboBox, value) -> None:
+    def _set_combo_by_data(self, combo: QComboBox, value: Any) -> None:
         for i in range(combo.count()):
             if combo.itemData(i) == value:
                 combo.setCurrentIndex(i)
@@ -114,13 +116,13 @@ class ItemDetailWidget(QGroupBox):
         media_type = self.type_combo.currentData()
         status = self.status_combo.currentData()
 
-        return {
-            "title": self.title_edit.text().strip(),
-            "media_type": media_type,
-            "status": status,
-            "rating": rating,
-            "notes": self.notes_edit.toPlainText().strip(),
-        }
+        return ItemFormData(
+            title=self.title_edit.text().strip(),
+            media_type=media_type,
+            status=status,
+            rating=rating,
+            notes=self.notes_edit.toPlainText().strip(),
+        )
 
     def get_data(self) -> ItemFormData:
         return self._collect_form_data()

@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QSpinBox,
     QTextEdit,
     QVBoxLayout,
+    QWidget,
 )
 
 from library_app.model.enums import ItemStatus, MediaType
@@ -20,7 +21,7 @@ class AddItemDialog(QDialog):
     View-only dialog. Collects user input; does NOT write to DB.
     """
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Add Item")
         self.setModal(True)
@@ -54,7 +55,9 @@ class AddItemDialog(QDialog):
         form.addRow("Rating", self.rating_spin)
         form.addRow("Notes", self.notes_edit)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(self)
+        buttons.addButton(QDialogButtonBox.StandardButton.Ok)
+        buttons.addButton(QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
@@ -71,13 +74,13 @@ class AddItemDialog(QDialog):
         media_type = self.type_combo.currentData()
         status = self.status_combo.currentData()
 
-        return {
-            "title": self.title_edit.text().strip(),
-            "media_type": media_type,
-            "status": status,
-            "rating": rating,
-            "notes": self.notes_edit.toPlainText().strip(),
-        }
+        return ItemFormData(
+            title=self.title_edit.text().strip(),
+            media_type=media_type,
+            status=status,
+            rating=rating,
+            notes=self.notes_edit.toPlainText().strip(),
+        )
 
     def get_data(self) -> ItemFormData:
         return self._collect_form_data()
