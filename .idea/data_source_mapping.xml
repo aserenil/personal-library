@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/.idea/queries/Query.sql" value="4f426331-db84-458e-9283-082237d2fd6a" />
-    <file url="file://$PROJECT_DIR$/src/library_app/model/repository.py" value="4f426331-db84-458e-9283-082237d2fd6a" />
+    <file url="file://$PROJECT_DIR$/.idea/queries/Query_1.sql" value="ffdbfee0-9498-49ef-98d6-c72f511c7484" />
+    <file url="file://$PROJECT_DIR$/schema.sql" value="ffdbfee0-9498-49ef-98d6-c72f511c7484" />
   </component>
 </project>

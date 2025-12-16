@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from library_app.model.entities import Item
+from library_app.view.types import ItemFormData
 
 
 class ItemDetailWidget(QGroupBox):
@@ -94,9 +95,10 @@ class ItemDetailWidget(QGroupBox):
     def current_item_id(self) -> int | None:
         return self._item_id
 
-    def get_data(self) -> dict[str, object]:
+    def _collect_form_data(self) -> ItemFormData:
         rating_val = self.rating_spin.value()
         rating = None if rating_val == 0 else rating_val
+
         return {
             "title": self.title_edit.text().strip(),
             "media_type": self.type_combo.currentText(),
@@ -104,3 +106,6 @@ class ItemDetailWidget(QGroupBox):
             "rating": rating,
             "notes": self.notes_edit.toPlainText().strip(),
         }
+
+    def get_data(self) -> ItemFormData:
+        return self._collect_form_data()

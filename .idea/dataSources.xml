@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="library" uuid="4f426331-db84-458e-9283-082237d2fd6a">
+    <data-source source="LOCAL" name="library.db" uuid="ffdbfee0-9498-49ef-98d6-c72f511c7484">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/src/library_app/data/library.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\verci\PycharmProjects\personal-library\data\library.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

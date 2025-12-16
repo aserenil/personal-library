@@ -3,6 +3,8 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
+# NOTE: DB path currently depends on working directory.
+# For production / tests, consider anchoring to project root.
 # Simple, explicit location for learning purposes:
 # personal-library/data/library.db
 DB_PATH = Path.cwd() / "data" / "library.db"
@@ -28,4 +30,17 @@ def init_db(conn: sqlite3.Connection) -> None:
         );
         """
     )
+    # Lightweight "migration": add columns if missing
+    for stmt in [
+        "ALTER TABLE items ADD COLUMN openlibrary_key TEXT NULL",
+        "ALTER TABLE items ADD COLUMN cover_id INTEGER NULL",
+        "ALTER TABLE items ADD COLUMN author TEXT NOT NULL DEFAULT ''",
+        "ALTER TABLE items ADD COLUMN first_publish_year INTEGER NULL",
+    ]:
+        try:
+            conn.execute(stmt)
+        except sqlite3.OperationalError as e:
+            if "duplicate column name" not in str(e).lower():
+                raise
+
     conn.commit()
