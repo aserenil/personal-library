@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import cast
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool
+from PySide6.QtWidgets import QApplication
 
+from library_app.model.covers import fetch_cover_to_cache
+from library_app.model.entities import Item
 from library_app.model.enums import ItemStatus, MediaType
 from library_app.model.openlibrary import OLResult, search_openlibrary
 from library_app.model.repository import ItemRepository
@@ -20,6 +24,10 @@ class MainController(QObject):
         self._repo = ItemRepository()
         self._window = MainWindow()
         self.table_model: ItemTableModel = self._window.table_model
+        self.table_model.cover_requested.connect(self._on_cover_requested)
+
+        self._current_cover_item_id: int | None = None
+        self._current_cover_cover_id: int | None = None
 
         self._repo.ensure_sample_data()
         self.refresh()
@@ -36,6 +44,11 @@ class MainController(QObject):
 
         self._pool = QThreadPool.globalInstance()
         self._window.search_online_requested.connect(self.on_search_online)
+
+        # when wiring things up:
+        app = QApplication.instance()
+        if app is not None:
+            app.aboutToQuit.connect(self._shutdown)
 
         self._window.set_status("Loaded items from SQLite.")
 
@@ -74,6 +87,7 @@ class MainController(QObject):
             return
 
         self._window.detail.load_item(item)
+        self._load_cover_for_item(item)
         self._window.set_status(f"Selected: {item.title}")
 
     def on_save_item(self) -> None:
@@ -166,3 +180,46 @@ class MainController(QObject):
         self.refresh(reselect_id=new_id)
         self._window.set_status(f"Imported: {r.title}")
         dlg.accept()
+
+    def _load_cover_for_item(self, item: Item) -> None:
+        # Guard against races when clicking around quickly
+        self._current_cover_item_id = item.id
+        self._current_cover_cover_id = item.cover_id
+
+        cover_id = item.cover_id
+        if not cover_id:
+            self._window.detail.set_cover_path(None)
+            return
+
+        w = Worker(fetch_cover_to_cache, cover_id, size="M")
+        w.signals.result.connect(lambda p: self._on_cover_ready(item.id, cover_id, p))
+        w.signals.error.connect(lambda tb: print(tb))
+        self._pool.start(cast(QRunnable, w))
+
+    def _on_cover_ready(self, item_id: int, cover_id: int, path: Path | None) -> None:
+        # Only update UI if we're still on the same selected item/cover
+        if self._current_cover_item_id != item_id:
+            return
+        if self._current_cover_cover_id != cover_id:
+            return
+
+        # Worker returns Path | None; keep it simple
+        self._window.detail.set_cover_path(path)
+
+    def _on_cover_requested(self, cover_id: int) -> None:
+        w = Worker(fetch_cover_to_cache, cover_id, size="M")
+
+        def _done(p: Path | None) -> None:
+            self.table_model.set_cover_ready(cover_id, ok=(p is not None))
+
+        def _err(tb: str) -> None:
+            print(tb)
+            self.table_model.set_cover_ready(cover_id, ok=False)
+
+        w.signals.result.connect(_done)
+        w.signals.error.connect(_err)
+        self._pool.start(cast(QRunnable, w))
+
+    def _shutdown(self) -> None:
+        # stop scheduling new work first (optional flag)
+        self._pool.waitForDone(2000)  # milliseconds; bump if you want

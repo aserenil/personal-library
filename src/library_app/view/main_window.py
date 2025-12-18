@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QSize, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
+    QHeaderView,
     QLabel,
     QMainWindow,
     QSplitter,
@@ -16,6 +17,10 @@ from PySide6.QtWidgets import (
 from library_app.model.entities import Item
 from library_app.view.item_detail_widget import ItemDetailWidget
 from library_app.view.item_table_model import ItemTableModel
+
+THUMB_W = 32
+THUMB_H = 48
+ROW_H = THUMB_H + 6  # padding so it doesn’t touch borders
 
 
 class MainWindow(QMainWindow):
@@ -52,6 +57,13 @@ class MainWindow(QMainWindow):
 
         self.table = QTableView(self)
         self.table.setSortingEnabled(True)
+        self.table.setIconSize(QSize(THUMB_W, THUMB_H))
+        self.table.verticalHeader().setDefaultSectionSize(ROW_H)
+        vh = self.table.verticalHeader()
+        vh.setDefaultSectionSize(ROW_H)
+        vh.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)  # keeps them fixed
+        self.table.verticalHeader().setVisible(False)  # hides row numbers
+        self.table.setWordWrap(False)
 
         self.detail = ItemDetailWidget(self)
 

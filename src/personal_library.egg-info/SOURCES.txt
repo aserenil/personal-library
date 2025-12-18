@@ -5,6 +5,7 @@ src/library_app/main.py
 src/library_app/controller/__init__.py
 src/library_app/controller/main_controller.py
 src/library_app/model/__init__.py
+src/library_app/model/covers.py
 src/library_app/model/db.py
 src/library_app/model/entities.py
 src/library_app/model/enums.py
