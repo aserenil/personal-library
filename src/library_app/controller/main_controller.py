@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import cast
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from library_app.model.covers import fetch_cover_to_cache
 from library_app.model.entities import Item
@@ -41,6 +41,8 @@ class MainController(QObject):
 
         # detail save -> repo update
         self._window.detail.save_requested.connect(self.on_save_item)
+
+        self._window.delete_action.triggered.connect(self.on_delete_item)
 
         self._pool = QThreadPool.globalInstance()
         self._window.search_online_requested.connect(self.on_search_online)
@@ -219,6 +221,35 @@ class MainController(QObject):
         w.signals.result.connect(_done)
         w.signals.error.connect(_err)
         self._pool.start(cast(QRunnable, w))
+
+    def on_delete_item(self) -> None:
+        item_id = self._window.selected_item_id()
+        if item_id is None:
+            self._window.set_status("Select an item to delete.")
+            return
+
+        item = self._repo.get_item(item_id)
+        title = item.title if item else f"item #{item_id}"
+
+        btn = QMessageBox.question(
+            self._window,
+            "Delete item",
+            f'Delete "{title}", item #{item_id}? This cannot be undone.',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if btn != QMessageBox.StandardButton.Yes:
+            return
+
+        deleted = self._repo.delete_item(item_id)
+        if not deleted:
+            self._window.set_status("Item was not found (already deleted?).")
+            return
+
+        # Refresh list + clear details (selection might now be invalid)
+        self.refresh()
+        self._window.detail.clear()
+        self._window.set_status(f"Deleted item #{item_id}.")
 
     def _shutdown(self) -> None:
         # stop scheduling new work first (optional flag)

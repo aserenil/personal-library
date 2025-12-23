@@ -127,6 +127,16 @@ class ItemRepository:
         )
         self._conn.commit()
 
+    def delete_item(self, item_id: int) -> bool:
+        """
+        Delete an item by id.
+
+        Returns True if a row was deleted, otherwise False.
+        """
+        cur = self._conn.execute("DELETE FROM items WHERE id = ?", (item_id,))
+        self._conn.commit()
+        return cur.rowcount > 0
+
     def ensure_sample_data(self) -> None:
         row = self._conn.execute("SELECT COUNT(*) AS c FROM items").fetchone()
         count = int(row["c"]) if row else 0
