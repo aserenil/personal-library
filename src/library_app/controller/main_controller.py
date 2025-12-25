@@ -29,7 +29,7 @@ class MainController(QObject):
         self._current_cover_item_id: int | None = None
         self._current_cover_cover_id: int | None = None
 
-        self._repo.ensure_sample_data()
+        # self._repo.ensure_sample_data()
         self.refresh()
 
         self._window.add_item_requested.connect(self.on_add_item)
@@ -234,7 +234,7 @@ class MainController(QObject):
         btn = QMessageBox.question(
             self._window,
             "Delete item",
-            f'Delete "{title}", item #{item_id}? This cannot be undone.',
+            f"Delete {title} (#{item_id})? This cannot be undone.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -249,7 +249,7 @@ class MainController(QObject):
         # Refresh list + clear details (selection might now be invalid)
         self.refresh()
         self._window.detail.clear()
-        self._window.set_status(f"Deleted item #{item_id}.")
+        self._window.set_status(f"Deleted {title} (#{item_id}).")
 
     def _shutdown(self) -> None:
         # stop scheduling new work first (optional flag)

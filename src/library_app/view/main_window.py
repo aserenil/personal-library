@@ -78,6 +78,7 @@ class MainWindow(QMainWindow):
         self.table.setWordWrap(False)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table.horizontalHeader().setStretchLastSection(True)
 
         self.detail = ItemDetailWidget(self)
 
