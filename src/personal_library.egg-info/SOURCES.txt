@@ -25,3 +25,4 @@ src/personal_library.egg-info/SOURCES.txt
 src/personal_library.egg-info/dependency_links.txt
 src/personal_library.egg-info/requires.txt
 src/personal_library.egg-info/top_level.txt
+tests/test_repository.py

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import cast
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool
 from PySide6.QtWidgets import QApplication, QMessageBox
 
+from library_app.dev.seed import _ensure_sample_data
 from library_app.model.covers import fetch_cover_to_cache
 from library_app.model.entities import Item
 from library_app.model.enums import ItemStatus, MediaType
@@ -29,7 +31,9 @@ class MainController(QObject):
         self._current_cover_item_id: int | None = None
         self._current_cover_cover_id: int | None = None
 
-        self._repo.ensure_sample_data()
+        if os.environ.get("LIBRARY_DEV_SEED") == "1":
+            _ensure_sample_data(self._repo)
+
         self.refresh()
 
         self._window.add_item_requested.connect(self.on_add_item)
@@ -234,7 +238,7 @@ class MainController(QObject):
         btn = QMessageBox.question(
             self._window,
             "Delete item",
-            f'Delete "{title}", item #{item_id}? This cannot be undone.',
+            f"Delete {title} (#{item_id})? This cannot be undone.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -249,7 +253,7 @@ class MainController(QObject):
         # Refresh list + clear details (selection might now be invalid)
         self.refresh()
         self._window.detail.clear()
-        self._window.set_status(f"Deleted item #{item_id}.")
+        self._window.set_status(f"Deleted {title} (#{item_id}).")
 
     def _shutdown(self) -> None:
         # stop scheduling new work first (optional flag)
