@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import cast
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool
 from PySide6.QtWidgets import QApplication, QMessageBox
 
+from library_app.dev.seed import _ensure_sample_data
 from library_app.model.covers import fetch_cover_to_cache
 from library_app.model.entities import Item
 from library_app.model.enums import ItemStatus, MediaType
@@ -29,7 +31,9 @@ class MainController(QObject):
         self._current_cover_item_id: int | None = None
         self._current_cover_cover_id: int | None = None
 
-        # self._repo.ensure_sample_data()
+        if os.environ.get("LIBRARY_DEV_SEED") == "1":
+            _ensure_sample_data(self._repo)
+
         self.refresh()
 
         self._window.add_item_requested.connect(self.on_add_item)
